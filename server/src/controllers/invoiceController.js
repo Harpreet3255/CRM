@@ -1,0 +1,102 @@
+import { supabase } from '../config/supabase.js';
+
+export async function getInvoices(req, res) {
+  try {
+    const { clientId } = req.query;
+    
+    let query = supabase
+      .from('invoices')
+      .select('*, clients(full_name, email), itineraries(title)')
+      .eq('agency_id', req.user.agency_id)
+      .order('created_at', { ascending: false });
+
+    if (clientId) {
+      query = query.eq('client_id', clientId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Get invoices error:', error);
+    res.status(500).json({ error: 'Failed to fetch invoices' });
+  }
+}
+
+export async function createInvoice(req, res) {
+  try {
+    const invoiceNumber = `INV-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
+    const { data, error } = await supabase
+      .from('invoices')
+      .insert({
+        ...req.body,
+        invoice_number: invoiceNumber,
+        agency_id: req.user.agency_id,
+        created_by: req.user.id
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Create invoice error:', error);
+    res.status(500).json({ error: 'Failed to create invoice' });
+  }
+}
+
+export async function updateInvoice(req, res) {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('invoices')
+      .update(req.body)
+      .eq('id', id)
+      .eq('agency_id', req.user.agency_id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Update invoice error:', error);
+    res.status(500).json({ error: 'Failed to update invoice' });
+  }
+}
+
+export async function deleteInvoice(req, res) {
+  try {
+    const { id } = req.params;
+    const { error } = await supabase
+      .from('invoices')
+      .delete()
+      .eq('id', id)
+      .eq('agency_id', req.user.agency_id);
+
+    if (error) throw error;
+    res.json({ success: true, message: 'Invoice deleted' });
+  } catch (error) {
+    console.error('Delete invoice error:', error);
+    res.status(500).json({ error: 'Failed to delete invoice' });
+  }
+}
+
+export async function getInvoiceById(req, res) {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*, clients(*), itineraries(*)')
+      .eq('id', id)
+      .eq('agency_id', req.user.agency_id)
+      .single();
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Get invoice error:', error);
+    res.status(500).json({ error: 'Failed to fetch invoice' });
+  }
+}
