@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  MapPin, 
-  Calendar, 
-  Users, 
+import {
+  MapPin,
+  Calendar,
+  Users,
   DollarSign,
   Share2,
   FileText,
   Edit,
-  Sparkles
+  Sparkles,
+  Eye
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import ItineraryDetailsDialog from "./ItineraryDetailsDialog";
 
 const statusColors = {
   draft: 'bg-slate-100 text-slate-700 border-slate-200',
@@ -26,6 +28,8 @@ const statusColors = {
 };
 
 export default function ItineraryList({ itineraries, isLoading }) {
+  const [selectedItinerary, setSelectedItinerary] = useState(null);
+
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -57,91 +61,97 @@ export default function ItineraryList({ itineraries, isLoading }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {itineraries.map((itinerary, index) => (
-        <motion.div
-          key={itinerary.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: index * 0.05 }}
-        >
-          <Card className="border-slate-200/60 shadow-md hover:shadow-xl transition-all group overflow-hidden">
-            <div className="h-2 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600"></div>
-            
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-purple-600 transition-colors">
-                    {itinerary.title}
-                  </h3>
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <MapPin className="w-4 h-4" />
-                    {itinerary.destination}
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {itineraries.map((itinerary, index) => (
+          <motion.div
+            key={itinerary.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <Card className="border-slate-200/60 shadow-md hover:shadow-xl transition-all group overflow-hidden flex flex-col h-full">
+              <div className="h-2 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600"></div>
+
+              <CardContent className="p-6 space-y-4 flex-1 flex flex-col">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-purple-600 transition-colors line-clamp-1">
+                      {itinerary.title || `${itinerary.duration}-Day Trip`}
+                    </h3>
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <MapPin className="w-4 h-4" />
+                      {itinerary.destination}
+                    </div>
                   </div>
+                  {itinerary.ai_generated_json && (
+                    <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white shrink-0 ml-2">
+                      <Sparkles className="w-3 h-3 mr-1" />
+                      AI
+                    </Badge>
+                  )}
                 </div>
-                {itinerary.ai_generated && (
-                  <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white">
-                    <Sparkles className="w-3 h-3 mr-1" />
-                    AI
+
+                <div className="space-y-2 flex-1">
+                  {itinerary.start_date && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Calendar className="w-4 h-4" />
+                      <span>
+                        {format(new Date(itinerary.start_date), 'MMM d, yyyy')}
+                        {itinerary.end_date && ` - ${format(new Date(itinerary.end_date), 'MMM d')}`}
+                      </span>
+                    </div>
+                  )}
+
+                  {itinerary.travelers && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Users className="w-4 h-4" />
+                      <span>{itinerary.travelers} travelers</span>
+                    </div>
+                  )}
+
+                  {itinerary.budget && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <DollarSign className="w-4 h-4" />
+                      <span className="capitalize">{itinerary.budget} Budget</span>
+                    </div>
+                  )}
+
+                  {itinerary.client && (
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                      <Users className="w-4 h-4" />
+                      <span className="font-medium text-purple-600">{itinerary.client.full_name}</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between pt-4 border-t border-slate-100 mt-auto">
+                  <Badge variant="outline" className={statusColors[itinerary.status] || statusColors.draft}>
+                    {itinerary.status || 'draft'}
                   </Badge>
-                )}
-              </div>
 
-              <div className="space-y-2">
-                {itinerary.start_date && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Calendar className="w-4 h-4" />
-                    <span>
-                      {format(new Date(itinerary.start_date), 'MMM d, yyyy')}
-                      {itinerary.end_date && ` - ${format(new Date(itinerary.end_date), 'MMM d')}`}
-                    </span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setSelectedItinerary(itinerary)}
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      View Plan
+                    </Button>
                   </div>
-                )}
-
-                {itinerary.travelers && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <Users className="w-4 h-4" />
-                    <span>{itinerary.travelers} travelers</span>
-                  </div>
-                )}
-
-                {itinerary.total_cost && (
-                  <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <DollarSign className="w-4 h-4" />
-                    <span>${itinerary.total_cost.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <Badge variant="outline" className={statusColors[itinerary.status] || statusColors.draft}>
-                  {itinerary.status || 'draft'}
-                </Badge>
-                
-                <div className="flex gap-2">
-                  <Button size="sm" variant="ghost">
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <Share2 className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost">
-                    <FileText className="w-4 h-4" />
-                  </Button>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
+      </div>
 
-              {itinerary.days && itinerary.days.length > 0 && (
-                <div className="pt-2">
-                  <p className="text-xs text-slate-500">
-                    {itinerary.days.length} days planned
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))}
-    </div>
+      <ItineraryDetailsDialog
+        itinerary={selectedItinerary}
+        open={!!selectedItinerary}
+        onClose={() => setSelectedItinerary(null)}
+      />
+    </>
   );
 }

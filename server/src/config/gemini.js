@@ -10,8 +10,9 @@ if (!process.env.GEMINI_API_KEY) {
 
 export const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-export const getModel = (modelName = 'gemini-2.5-flash-lite') => {
-  return genAI.getGenerativeModel({ model: modelName });
-};
+export function getModel(modelName) {
+  const model = modelName || 'gemini-2.0-flash-exp';
+  return genAI.getGenerativeModel({ model });
+}
 
-console.log('✅ Gemini AI initialized (gemini-2.5-flash-lite ready)');
+console.log('✅ Gemini AI initialized (gemini-2.0-flash-exp ready)');

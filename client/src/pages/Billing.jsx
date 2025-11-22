@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../api/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  CreditCard, 
-  Check, 
-  Zap, 
+import {
+  CreditCard,
+  Check,
+  Zap,
   Download,
   TrendingUp,
   Calendar
@@ -58,13 +59,33 @@ const plans = [
   }
 ];
 
-const invoices = [
-  { id: "INV-2024-001", date: "Jan 1, 2024", amount: "$499", status: "paid" },
-  { id: "INV-2023-012", date: "Dec 1, 2023", amount: "$499", status: "paid" },
-  { id: "INV-2023-011", date: "Nov 1, 2023", amount: "$199", status: "paid" }
-];
-
 export default function Billing() {
+  const [invoices, setInvoices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const fetchInvoices = async () => {
+    try {
+      const response = await api.get('/invoices');
+      if (response.data.success) {
+        const formatted = response.data.invoices.map(inv => ({
+          id: inv.invoice_number,
+          date: new Date(inv.created_at).toLocaleDateString(),
+          amount: `$${inv.amount}`,
+          status: inv.status
+        }));
+        setInvoices(formatted);
+      }
+    } catch (error) {
+      console.error("Failed to fetch invoices:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-8">
       <motion.div
@@ -160,26 +181,23 @@ export default function Billing() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card className={`border-2 ${
-                plan.current 
-                  ? 'border-indigo-600 shadow-2xl shadow-indigo-200' 
+              <Card className={`border-2 ${plan.current
+                  ? 'border-indigo-600 shadow-2xl shadow-indigo-200'
                   : 'border-slate-200 shadow-lg'
-              }`}>
+                }`}>
                 <CardHeader className={
-                  plan.current 
-                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600' 
+                  plan.current
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600'
                     : 'bg-slate-50'
                 }>
                   <div className="flex justify-between items-start">
                     <div>
-                      <CardTitle className={`text-xl font-bold ${
-                        plan.current ? 'text-white' : 'text-slate-900'
-                      }`}>
+                      <CardTitle className={`text-xl font-bold ${plan.current ? 'text-white' : 'text-slate-900'
+                        }`}>
                         {plan.name}
                       </CardTitle>
-                      <p className={`text-sm mt-1 ${
-                        plan.current ? 'text-white/80' : 'text-slate-500'
-                      }`}>
+                      <p className={`text-sm mt-1 ${plan.current ? 'text-white/80' : 'text-slate-500'
+                        }`}>
                         {plan.credits}
                       </p>
                     </div>
@@ -201,12 +219,11 @@ export default function Billing() {
                       </li>
                     ))}
                   </ul>
-                  <Button 
-                    className={`w-full ${
-                      plan.current 
-                        ? 'bg-slate-200 text-slate-600' 
+                  <Button
+                    className={`w-full ${plan.current
+                        ? 'bg-slate-200 text-slate-600'
                         : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
-                    }`}
+                      }`}
                     disabled={plan.current}
                   >
                     {plan.current ? 'Current Plan' : 'Upgrade'}

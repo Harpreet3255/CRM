@@ -27,6 +27,14 @@ export function CardTitle({ className = "", children }) {
   );
 }
 
+export function CardDescription({ className = "", children }) {
+  return (
+    <p className={`text-sm text-slate-500 ${className}`}>
+      {children}
+    </p>
+  );
+}
+
 export function CardContent({ className = "", children }) {
   return (
     <div className={`p-4 ${className}`}>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
   LayoutDashboard,
@@ -10,7 +10,7 @@ import {
   Building2,
   DollarSign,
   Settings,
-  Bell,
+  LogOut,
   Search,
   Menu,
   MessageSquare,
@@ -32,8 +32,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 import AgencyBranding from "./agency/AgencyBranding.jsx";
-// import AIAssistant from "./ai/AIAssistant.jsx"; // uncomment later when feature added
+import AIAssistant from "./ai/AIAssistant.jsx";
 
 const navigationItems = [
   { title: "Dashboard", url: createPageUrl("Dashboard"), icon: LayoutDashboard },
@@ -49,6 +50,8 @@ const navigationItems = [
 
 export default function Layout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [showAI, setShowAI] = useState(false);
 
   return (
@@ -70,17 +73,15 @@ export default function Layout({ children }) {
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton
                           asChild
-                          className={`group relative mb-1 rounded-xl transition-all duration-300 ${
-                            isActive
+                          className={`group relative mb-1 rounded-xl transition-all duration-300 ${isActive
                               ? "bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 text-white shadow-lg shadow-purple-500/25"
                               : "hover:bg-slate-100/80 text-slate-700"
-                          }`}
+                            }`}
                         >
                           <Link to={item.url} className="flex items-center gap-3 px-4 py-2.5">
                             <item.icon
-                              className={`w-4 h-4 ${
-                                isActive ? "text-white" : "text-slate-500 group-hover:text-purple-600"
-                              } transition-colors`}
+                              className={`w-4 h-4 ${isActive ? "text-white" : "text-slate-500 group-hover:text-purple-600"
+                                } transition-colors`}
                             />
                             <span className="font-medium text-sm">{item.title}</span>
                           </Link>
@@ -109,8 +110,17 @@ export default function Layout({ children }) {
                 <p className="font-semibold text-slate-900 text-sm truncate">Travel Co.</p>
                 <p className="text-xs text-slate-500 truncate">Pro Plan</p>
               </div>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Bell className="w-4 h-4 text-slate-500" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => {
+                  signOut();
+                  navigate('/login');
+                }}
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4 text-slate-500" />
               </Button>
             </div>
           </SidebarFooter>
@@ -144,8 +154,8 @@ export default function Layout({ children }) {
 
           <div className="flex-1 overflow-auto">{children}</div>
 
-          {/* Future AI Assistant Modal */}
-          {/* {showAI && <AIAssistant onClose={() => setShowAI(false)} />} */}
+          {/* AI Assistant Modal */}
+          {showAI && <AIAssistant onClose={() => setShowAI(false)} />}
         </main>
       </div>
     </SidebarProvider>

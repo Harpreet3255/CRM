@@ -1,5 +1,22 @@
 // server/src/controllers/clientController.js
 import { supabase } from "../config/supabase.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logFile = path.join(__dirname, '../../debug.log');
+
+function logToFile(message) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `[${timestamp}] [CLIENTS] ${message}\n`;
+  try {
+    fs.appendFileSync(logFile, logMessage);
+  } catch (err) {
+    console.error("Failed to write to log file:", err);
+  }
+}
 
 /*
   Notes:
@@ -29,6 +46,31 @@ function mapClientRecord(rec) {
 export const getClients = async (req, res) => {
   try {
     const { limit, q } = req.query;
+    logToFile(`[GetClients] Request from User: ${req.user?.id}, Agency: ${req.user?.agency_id}`);
+
+    if (!req.user?.agency_id) {
+      logToFile("[GetClients] Error: Missing agency_id in request user");
+      return res.status(400).json({ error: "User has no agency assigned" });
+    }
+
+    // --- ADOPT ORPHANED CLIENTS ---
+    // If this user created clients before having an agency_id, assign them now.
+    try {
+      const { error: adoptError } = await supabase
+        .from("clients")
+        .update({ agency_id: req.user.agency_id })
+        .eq("created_by", req.user.id)
+        .is("agency_id", null);
+
+      if (adoptError) {
+        logToFile(`[GetClients] Client adoption failed: ${adoptError.message}`);
+      } else {
+        logToFile(`[GetClients] Orphaned clients adopted to agency ${req.user.agency_id}`);
+      }
+    } catch (adoptErr) {
+      logToFile(`[GetClients] Client adoption error: ${adoptErr.message}`);
+    }
+    // -----------------------------
 
     let query = supabase
       .from("clients")
@@ -48,13 +90,19 @@ export const getClients = async (req, res) => {
 
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      logToFile(`[GetClients] DB Error: ${error.message}`);
+      throw error;
+    }
+
+    logToFile(`[GetClients] Success. Found ${data?.length || 0} records.`);
 
     // Map each record to include `name` alias
     const clients = (data || []).map(mapClientRecord);
 
     res.json({ success: true, clients });
   } catch (err) {
+    logToFile(`[GetClients] Exception: ${err.message}`);
     console.error("Get clients error:", err);
     res.status(500).json({ error: "Failed to fetch clients" });
   }

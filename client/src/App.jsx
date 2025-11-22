@@ -6,6 +6,9 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Itineraries from './pages/Itineraries';
+import Quotes from './pages/Quotes';
+import Finance from './pages/Finance';
+import Settings from './pages/Settings';
 import CRM from './pages/CRM';
 import Layout from './components/Layout';
 
@@ -45,7 +48,7 @@ function AppRoutes() {
         path="/login"
         element={user ? <Navigate to="/dashboard" /> : <Login />}
       />
-      
+
       <Route
         path="/*"
         element={
@@ -55,6 +58,9 @@ function AppRoutes() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/itineraries" element={<Itineraries />} />
+                <Route path="/quotes" element={<Quotes />} />
+                <Route path="/finance" element={<Finance />} />
+                <Route path="/settings" element={<Settings />} />
                 <Route path="/crm" element={<CRM />} />
                 <Route path="/" element={<Navigate to="/dashboard" />} />
                 <Route path="/test" element={<TestConnection />} />

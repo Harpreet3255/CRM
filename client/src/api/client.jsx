@@ -1,71 +1,58 @@
-import axios from 'axios';
+// client/src/api/client.jsx
+import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
   withCredentials: true,
 });
 
-// Add auth token to all requests
+// Attach Authorization header
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('supabase_token');
+  const token = localStorage.getItem('auth_token');
+
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+
   return config;
 });
 
-// Handle response errors
+// Handle 401 errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('supabase_token');
+      console.warn("Unauthorized – clearing token");
+      localStorage.removeItem('auth_token');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
-// Entity API wrapper for common CRUD operations
-const createEntityAPI = (endpoint) => ({
-  list: async (sort = '-created_date', limit = 100) => {
-    const response = await api.get(`/${endpoint}`, {
-      params: { sort, limit }
-    });
-    return response.data.data || response.data;
-  },
-  
-  get: async (id) => {
-    const response = await api.get(`/${endpoint}/${id}`);
-    return response.data.data || response.data;
-  },
-  
-  create: async (data) => {
-    const response = await api.post(`/${endpoint}`, data);
-    return response.data.data || response.data;
-  },
-  
-  update: async (id, data) => {
-    const response = await api.patch(`/${endpoint}/${id}`, data);
-    return response.data.data || response.data;
-  },
-  
-  delete: async (id) => {
-    const response = await api.delete(`/${endpoint}/${id}`);
-    return response.data;
-  },
-});
-
-// Add entity methods to api object
+// Entity helpers for common CRUD operations
 api.entities = {
-  Client: createEntityAPI('clients'),
-  Lead: createEntityAPI('leads'),
-  Itinerary: createEntityAPI('itineraries'),
-  Invoice: createEntityAPI('invoices'),
-  Agency: createEntityAPI('agencies'),
+  Lead: {
+    list: (sort, limit) => api.get(`/leads${limit ? `?limit=${limit}` : ''}`).then(res => res.data.leads || []),
+    create: (data) => api.post('/leads', data).then(res => res.data.lead),
+    update: (id, data) => api.patch(`/leads/${id}`, data).then(res => res.data.lead),
+    delete: (id) => api.delete(`/leads/${id}`),
+  },
+  Client: {
+    list: (sort, limit) => api.get(`/clients${limit ? `?limit=${limit}` : ''}`).then(res => res.data.clients || []),
+    create: (data) => api.post('/clients', data).then(res => res.data.client),
+    update: (id, data) => api.patch(`/clients/${id}`, data).then(res => res.data.client),
+    delete: (id) => api.delete(`/clients/${id}`),
+  },
+  Itinerary: {
+    list: (sort, limit) => api.get(`/itineraries${limit ? `?limit=${limit}` : ''}`).then(res => res.data.itineraries || []),
+    create: (data) => api.post('/itineraries', data).then(res => res.data.itinerary),
+    update: (id, data) => api.patch(`/itineraries/${id}`, data).then(res => res.data.itinerary),
+    delete: (id) => api.delete(`/itineraries/${id}`),
+  },
 };
 
 export default api;

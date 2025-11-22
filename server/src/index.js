@@ -11,6 +11,9 @@ import itinerariesRoutes from './routes/itineraries.js';
 import aiRoutes from './routes/ai.js';
 import authRoutes from './routes/auth.js';
 import clientsRoutes from './routes/clients.js';
+import invoicesRoutes from './routes/invoices.js';
+import leadsRoutes from './routes/leads.js';
+import settingsRoutes from './routes/settings.js';
 
 const app = express();
 
@@ -34,6 +37,20 @@ app.use(bodyParser.json({ limit: "2mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const reqLogFile = path.join(__dirname, '../request.log');
+
+app.use((req, res, next) => {
+  const msg = `[${new Date().toISOString()}] ${req.method} ${req.url}\n`;
+  fs.appendFileSync(reqLogFile, msg);
+  next();
+});
+
 // -----------------------------------------------------
 // Health check
 // -----------------------------------------------------
@@ -47,6 +64,9 @@ app.get("/", (req, res) => {
 app.use("/api/auth", authRoutes);
 app.use("/api/clients", clientsRoutes);
 app.use("/api/itineraries", itinerariesRoutes);
+app.use("/api/invoices", invoicesRoutes);
+app.use("/api/leads", leadsRoutes);
+app.use("/api/settings", settingsRoutes);
 app.use("/api/ai", aiRoutes);
 
 // -----------------------------------------------------

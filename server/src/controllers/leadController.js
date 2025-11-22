@@ -7,38 +7,46 @@ export const createLead = async (req, res) => {
   try {
     const {
       name,
+      full_name,
       email,
       phone,
       company,
       source,
       destination,
+      budget,
       budget_range,
+      travelers,
       travel_date,
+      travel_dates,
+      trip_type,
       notes,
       priority,
-      assigned_to
+      assigned_to,
+      status
     } = req.body;
 
-    if (!name) {
+    const leadName = full_name || name;
+    if (!leadName) {
       return res.status(400).json({ error: 'Name is required' });
     }
 
+    // Match actual database schema
     const leadData = {
-      name,
+      full_name: leadName,
       email: email || null,
       phone: phone || null,
-      company: company || null,
       source: source || 'manual',
       destination: destination || null,
-      budget_range: budget_range || null,
-      travel_date: travel_date || null,
+      budget: budget ? parseFloat(budget) : null,
+      travelers: travelers ? parseInt(travelers) : 1,
+      travel_dates: travel_dates || travel_date || null,
       notes: notes || null,
-      priority: priority || 'medium',
       assigned_to: assigned_to || req.user.id,
-      agency_id: req.user.agency_id,
       created_by: req.user.id,
-      status: 'new',
-      created_at: new Date().toISOString()
+      agency_id: req.user.agency_id,
+      status: status || 'new',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
 
     const { data, error } = await supabase

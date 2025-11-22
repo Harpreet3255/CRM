@@ -43,6 +43,11 @@ export default function CreateLeadDialog({ open, onClose }) {
       toast.success('Lead created successfully');
       onClose();
     },
+    onError: (error) => {
+      console.error('Lead creation error:', error);
+      const errorMessage = error.response?.data?.error || error.response?.data?.details || 'Failed to create lead';
+      toast.error(errorMessage);
+    },
   });
 
   const handleSubmit = (e) => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import api from "@/api/client";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,12 @@ export default function CreateItineraryDialog({ open, onClose }) {
     travelers: 2,
     trip_type: 'family',
     budget: '',
+    client_id: '',
+  });
+
+  const { data: clients = [] } = useQuery({
+    queryKey: ['clients'],
+    queryFn: () => api.entities.Client.list(),
   });
 
   const createMutation = useMutation({
@@ -43,7 +49,7 @@ export default function CreateItineraryDialog({ open, onClose }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     const itineraryData = {
       ...formData,
       travelers: parseInt(formData.travelers),
@@ -76,6 +82,26 @@ export default function CreateItineraryDialog({ open, onClose }) {
                 placeholder="Amazing Paris Adventure"
                 required
               />
+            </div>
+
+            <div className="md:col-span-2">
+              <Label htmlFor="client">Client *</Label>
+              <Select
+                value={formData.client_id}
+                onValueChange={(value) => setFormData({ ...formData, client_id: value })}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a client" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>
+                      {client.full_name || client.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>

@@ -39,7 +39,7 @@ export const generateItinerary = async (req, res) => {
     // Build a JSON-output prompt (we instruct model to return JSON)
     const daysNum = parseInt((String(duration).match(/\d+/) || [duration])[0] || 1, 10);
 
-    const model = getModel('gemini-2.5-flash-lite');
+    const model = getModel('gemini-1.5-flash');
 
     const intentPrompt = `
 You are an expert travel planner. Produce a DAY-WISE itinerary as valid JSON ONLY.
@@ -159,34 +159,57 @@ Generate ${daysNum} days.
  * Supports ?limit=5
  */
 export const getItineraries = async (req, res) => {
+  console.log('getItineraries called for agency:', req.user.agency_id);
   try {
     const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
 
     let query = supabase
       .from('itineraries')
-      .select(`
-        *,
-        client:clients!fk_itineraries_client (
-          id,
-          full_name,
-          email,
-          phone
-        ),
-        created_by_user:user_profiles!fk_itineraries_created_by (
-          id,
-          full_name,
-          email
-        )
-      `)
+      .select('*')
       .eq('agency_id', req.user.agency_id)
       .order('created_at', { ascending: false });
 
     if (limit) query = query.limit(limit);
 
-    const { data, error } = await query;
+    const { data: itineraries, error } = await query;
     if (error) throw error;
 
-    return res.json({ success: true, itineraries: data || [] });
+    if (!itineraries || itineraries.length === 0) {
+      return res.json({ success: true, itineraries: [] });
+    }
+
+    // Manual join for clients
+    const clientIds = [...new Set(itineraries.map(i => i.client_id).filter(Boolean))];
+    const { data: clients } = await supabase
+      .from('clients')
+      .select('id, full_name, email, phone')
+      .in('id', clientIds);
+
+    const clientMap = (clients || []).reduce((acc, c) => {
+      acc[c.id] = c;
+      return acc;
+    }, {});
+
+    // Manual join for users
+    const userIds = [...new Set(itineraries.map(i => i.created_by).filter(Boolean))];
+    const { data: users } = await supabase
+      .from('users')
+      .select('id, name, email')
+      .in('id', userIds);
+
+    const userMap = (users || []).reduce((acc, u) => {
+      acc[u.id] = u;
+      return acc;
+    }, {});
+
+    // Merge
+    const enriched = itineraries.map(i => ({
+      ...i,
+      client: clientMap[i.client_id] || null,
+      created_by_user: userMap[i.created_by] || null
+    }));
+
+    return res.json({ success: true, itineraries: enriched });
   } catch (err) {
     console.error('Error fetching itineraries:', err);
     return res.status(500).json({ error: 'Failed to fetch itineraries', details: err.message });
@@ -203,8 +226,8 @@ export const getItinerary = async (req, res) => {
       .from('itineraries')
       .select(`
         *,
-        client:clients!fk_itineraries_client (*),
-        created_by_user:user_profiles!fk_itineraries_created_by (id, full_name, email)
+        client:clients (*),
+        created_by_user:users (id, name, email)
       `)
       .eq('id', id)
       .eq('agency_id', req.user.agency_id)

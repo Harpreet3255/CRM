@@ -43,7 +43,7 @@ export default function AIAssistant() {
     setLoading(true);
 
     try {
-      const response = await api.post('/tono/chat', {
+      const response = await api.post('/ai/chat', {
         message: input.trim()
       });
 
@@ -164,21 +164,19 @@ export default function AIAssistant() {
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`max-w-[80%] rounded-lg p-3 ${
-                message.role === 'user'
+              className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
                   ? 'bg-blue-600 text-white'
                   : message.error
-                  ? 'bg-red-50 text-red-900 border border-red-200'
-                  : 'bg-gray-100 text-gray-900'
-              }`}
+                    ? 'bg-red-50 text-red-900 border border-red-200'
+                    : 'bg-gray-100 text-gray-900'
+                }`}
             >
               <div className="whitespace-pre-wrap break-words">
                 {message.content}
               </div>
               <div
-                className={`text-xs mt-1 ${
-                  message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
-                }`}
+                className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-100' : 'text-gray-500'
+                  }`}
               >
                 {new Date(message.timestamp).toLocaleTimeString()}
               </div>

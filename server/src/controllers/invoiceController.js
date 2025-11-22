@@ -3,10 +3,22 @@ import { supabase } from '../config/supabase.js';
 export async function getInvoices(req, res) {
   try {
     const { clientId } = req.query;
-    
+
+    // --- ADOPT ORPHANED INVOICES ---
+    try {
+      await supabase
+        .from("invoices")
+        .update({ agency_id: req.user.agency_id })
+        .eq("created_by", req.user.id)
+        .is("agency_id", null);
+    } catch (err) {
+      console.error("Invoice adoption error:", err);
+    }
+    // -------------------------------
+
     let query = supabase
       .from('invoices')
-      .select('*, clients(full_name, email), itineraries(title)')
+      .select('*')
       .eq('agency_id', req.user.agency_id)
       .order('created_at', { ascending: false });
 
@@ -17,7 +29,21 @@ export async function getInvoices(req, res) {
     const { data, error } = await query;
 
     if (error) throw error;
-    res.json({ success: true, data });
+
+    // Manual join for clients
+    const enriched = await Promise.all((data || []).map(async (invoice) => {
+      if (invoice.client_id) {
+        const { data: client } = await supabase
+          .from('clients')
+          .select('id, full_name, email')
+          .eq('id', invoice.client_id)
+          .single();
+        return { ...invoice, client };
+      }
+      return invoice;
+    }));
+
+    res.json({ success: true, invoices: enriched });
   } catch (error) {
     console.error('Get invoices error:', error);
     res.status(500).json({ error: 'Failed to fetch invoices' });

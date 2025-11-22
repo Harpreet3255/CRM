@@ -1,6 +1,18 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { supabase } from "../config/supabase.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logFile = path.join(__dirname, '../../debug.log');
+
+function logToFile(msg) {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(logFile, `[${timestamp}] [AUTH] ${msg}\n`);
+}
 
 // =========================
 // REGISTER
@@ -8,12 +20,31 @@ import { supabase } from "../config/supabase.js";
 export const register = async (req, res) => {
   try {
     const { full_name, email, password, agency_name } = req.body;
+    logToFile(`[Register Attempt] Email: ${email}, Agency: ${agency_name}`);
 
     if (!full_name || !email || !password || !agency_name) {
+      logToFile("[Register Failed] Missing fields");
       return res.status(400).json({ error: "All fields required" });
     }
 
-    // 1. Create agency
+    // 1. Create Supabase Auth User
+    logToFile("[Register] Creating Supabase Auth user...");
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { full_name }
+    });
+
+    if (authError) {
+      logToFile(`[Register Failed] Supabase Auth error: ${authError.message}`);
+      throw authError;
+    }
+    const userId = authData.user.id;
+    logToFile(`[Register] Auth user created. ID: ${userId}`);
+
+    // 2. Create agency
+    logToFile("[Register] Creating agency...");
     const { data: agency, error: agencyError } = await supabase
       .from("agencies")
       .insert({
@@ -24,22 +55,27 @@ export const register = async (req, res) => {
       .select()
       .single();
 
-    if (agencyError) throw agencyError;
+    if (agencyError) {
+      logToFile(`[Register Failed] Agency creation error: ${agencyError.message}`);
+      // Cleanup auth user if agency creation fails
+      await supabase.auth.admin.deleteUser(userId);
+      throw agencyError;
+    }
+    logToFile(`[Register] Agency created. ID: ${agency.id}`);
 
-    // 2. Hash password
-    const hashed = await bcrypt.hash(password, 10);
+    // Hash password for local storage
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    // 3. Create user in our "users" table
-    const userId = crypto.randomUUID();
-
+    // 3. Create user in our "users" table linked to Auth ID
+    logToFile("[Register] Creating user in 'users' table...");
     const { data: newUser, error: userError } = await supabase
       .from("users")
       .insert({
-        id: userId,
+        id: userId, // Link to Supabase Auth ID
         agency_id: agency.id,
         email,
         name: full_name,
-        password_hash: hashed,
+        password_hash: passwordHash, // Store hashed password
         role: "admin",
         status: "active",
         created_at: new Date().toISOString(),
@@ -47,9 +83,16 @@ export const register = async (req, res) => {
       .select()
       .single();
 
-    if (userError) throw userError;
+    if (userError) {
+      logToFile(`[Register Failed] User table insertion error: ${userError.message}`);
+      await supabase.auth.admin.deleteUser(userId);
+      // Also delete agency if user creation fails to keep DB clean
+      await supabase.from("agencies").delete().eq("id", agency.id);
+      throw userError;
+    }
+    logToFile("[Register] User created in 'users' table");
 
-    // 4. Sign JWT
+    // Generate JWT for immediate login
     const token = jwt.sign(
       {
         id: newUser.id,
@@ -62,15 +105,17 @@ export const register = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    logToFile("[Register Success] Token generated");
+
     return res.json({
       success: true,
       message: "Registration successful",
-      token,
+      token, // Return token
       user: newUser,
       agency,
     });
   } catch (err) {
-    console.error("Register error:", err);
+    logToFile(`Register error: ${err.message}`);
     return res.status(500).json({ error: err.message });
   }
 };
@@ -81,21 +126,167 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    logToFile(`[Login Attempt] Email: ${email}`);
 
-    // Find user
-    const { data: user, error } = await supabase
+    // 1. Try to find user in our "users" table
+    let { data: user, error } = await supabase
       .from("users")
       .select("*")
       .eq("email", email)
       .single();
 
+    // 2. If user not found in "users" table, check if they exist in Supabase Auth
     if (error || !user) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
+      logToFile("[Login] User not found in 'users' table. Checking Supabase Auth...");
 
-    // Compare passwords
-    const valid = await bcrypt.compare(password, user.password_hash);
-    if (!valid) return res.status(401).json({ error: "Invalid password" });
+      const { data: sbData, error: sbError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (sbError) {
+        logToFile(`[Login Failed] Supabase Auth failed: ${sbError.message}`);
+        return res.status(401).json({ error: "Invalid email or password" });
+      }
+
+      logToFile("[Login] Supabase Auth successful. Syncing user to 'users' table...");
+      const sbUser = sbData.user;
+
+      // Create agency (if needed)
+      let agencyId = null;
+      try {
+        // Try to find existing agency with this email first
+        const { data: existingAgency } = await supabase.from("agencies").select("id").eq("contact_email", email).single();
+
+        if (existingAgency) {
+          agencyId = existingAgency.id;
+          logToFile(`[Login Sync] Found existing agency: ${agencyId}`);
+        } else {
+          // Create new agency
+          const { data: agency, error: agencyError } = await supabase
+            .from("agencies")
+            .insert({
+              agency_name: sbUser.user_metadata?.full_name ? `${sbUser.user_metadata.full_name}'s Agency` : "My Agency",
+              contact_email: email,
+              created_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (agencyError) {
+            logToFile(`[Login Sync] Agency creation failed: ${agencyError.message}`);
+            logToFile("[Login Sync] Proceeding without agency.");
+          } else {
+            agencyId = agency.id;
+            logToFile(`[Login Sync] Agency created. ID: ${agencyId}`);
+          }
+        }
+      } catch (err) {
+        logToFile(`[Login Sync] Agency logic error: ${err.message}`);
+      }
+
+      // Create user in "users" table
+      const { data: newUser, error: createError } = await supabase
+        .from("users")
+        .insert({
+          id: sbUser.id,
+          agency_id: agencyId, // Can be null
+          email: sbUser.email,
+          name: sbUser.user_metadata?.full_name || email.split('@')[0],
+          password_hash: 'managed_by_supabase',
+          role: "admin",
+          status: "active",
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        logToFile(`[Login Sync] User creation failed: ${createError.message}`);
+        return res.status(500).json({ error: "Failed to sync user record" });
+      }
+
+      user = newUser;
+      logToFile(`[Login Sync] User synced successfully. ID: ${user.id}`);
+    } else {
+      // User found in "users" table
+
+      // --- SELF-HEALING: Fix missing agency_id for existing users ---
+      if (!user.agency_id) {
+        logToFile(`[Login] Existing user ${user.id} has no agency_id. Attempting to sync...`);
+        let agencyId = null;
+        try {
+          // Try to find existing agency with this email first
+          const { data: existingAgency } = await supabase.from("agencies").select("id").eq("contact_email", email).single();
+
+          if (existingAgency) {
+            agencyId = existingAgency.id;
+            logToFile(`[Login Sync] Found existing agency: ${agencyId}`);
+          } else {
+            // Create new agency
+            const { data: agency, error: agencyError } = await supabase
+              .from("agencies")
+              .insert({
+                agency_name: user.name ? `${user.name}'s Agency` : "My Agency",
+                contact_email: email,
+                created_at: new Date().toISOString(),
+              })
+              .select()
+              .single();
+
+            if (agencyError) {
+              logToFile(`[Login Sync] Agency creation failed: ${agencyError.message}`);
+            } else {
+              agencyId = agency.id;
+              logToFile(`[Login Sync] Agency created. ID: ${agencyId}`);
+            }
+          }
+
+          if (agencyId) {
+            // Update user
+            const { error: updateError } = await supabase
+              .from('users')
+              .update({ agency_id: agencyId })
+              .eq('id', user.id);
+
+            if (updateError) {
+              logToFile(`[Login Sync] Failed to update user agency_id: ${updateError.message}`);
+            } else {
+              user.agency_id = agencyId; // Update local object
+              logToFile(`[Login Sync] User agency_id updated to ${agencyId}`);
+            }
+          }
+        } catch (err) {
+          logToFile(`[Login Sync] Agency logic error: ${err.message}`);
+        }
+      }
+      // -----------------------------------------------------------
+
+      let valid = false;
+
+      // Check if password is managed by Supabase (legacy/hybrid) or local bcrypt
+      if (user.password_hash === 'managed_by_supabase') {
+        logToFile("[Login] User has Supabase-managed password. Attempting Supabase Auth sign-in...");
+        const { data: sbData, error: sbError } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+
+        if (sbError) {
+          logToFile(`[Login Failed] Supabase Auth failed: ${sbError.message}`);
+          valid = false;
+        } else {
+          logToFile("[Login] Supabase Auth successful");
+          valid = true;
+        }
+      } else {
+        // Compare passwords using bcrypt
+        valid = await bcrypt.compare(password, user.password_hash);
+        logToFile(`[Login] Bcrypt validation result: ${valid}`);
+      }
+
+      if (!valid) return res.status(401).json({ error: "Invalid password" });
+    }
 
     // Sign JWT
     const token = jwt.sign(
@@ -103,12 +294,15 @@ export const login = async (req, res) => {
         id: user.id,
         email: user.email,
         full_name: user.name,
-        agency_id: user.agency_id,
+        // Use user.agency_id if available, otherwise use the locally created agencyId (if any)
+        agency_id: user.agency_id || (typeof agencyId !== 'undefined' ? agencyId : null),
         role: user.role,
       },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
+
+    logToFile("[Login Success] Token generated");
 
     return res.json({
       success: true,
@@ -116,7 +310,7 @@ export const login = async (req, res) => {
       user,
     });
   } catch (err) {
-    console.error("Login error:", err);
+    logToFile(`Login error: ${err.message}`);
     return res.status(500).json({ error: err.message });
   }
 };

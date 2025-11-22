@@ -1,4 +1,4 @@
-// server/src/middleware/auth.js
+import jwt from 'jsonwebtoken';
 import { supabase } from '../config/supabase.js';
 
 export async function authenticate(req, res, next) {
@@ -8,29 +8,32 @@ export async function authenticate(req, res, next) {
 
     if (!token) return res.status(401).json({ error: 'No token provided' });
 
-    // supabase.auth.getUser expects an access token
-    const { data, error } = await supabase.auth.getUser(token);
+    // Verify custom JWT
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (error || !data?.user) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    // Pull profile from user_profiles (contains agency_id etc.)
-    const { data: profile, error: profileErr } = await supabase
-      .from('user_profiles')
-      .select('*')
-      .eq('id', data.user.id)
+    // Check if user exists in DB and is active
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*, agencies(*)')
+      .eq('id', decoded.id)
       .single();
 
-    if (profileErr) {
-      console.error('Profile load error:', profileErr);
-      return res.status(401).json({ error: 'User profile not found' });
+    if (error || !user) {
+      console.error('Auth Middleware - User fetch error:', error);
+      return res.status(401).json({ error: 'Invalid token or user not found' });
     }
 
-    req.user = { ...data.user, ...profile };
+    if (user.status !== 'active') {
+      return res.status(403).json({ error: 'User account is inactive' });
+    }
+
+    req.user = {
+      ...user,
+      agency_id: user.agency_id // Explicitly ensure this is set
+    };
     next();
   } catch (err) {
-    console.error('Auth middleware error:', err);
-    return res.status(401).json({ error: 'Authentication failed' });
+    console.error('Auth middleware error:', err.message);
+    return res.status(401).json({ error: 'Invalid token' });
   }
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Card } from '../components/ui/card';
 import {
-  Users, DollarSign, FileText, Calendar, MapPin, Sparkles
+  Users, DollarSign, FileText, Calendar, MapPin
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/client';
@@ -35,15 +35,20 @@ export default function Dashboard() {
         api.get('/clients/stats')
       ]);
 
-      // Correct mapping based on backend response
+      // Fix client list (use name, not full_name)
       setRecentClients(clientsRes.data.clients?.slice(0, 5) || []);
+
+      // Fix itineraries list
       setRecentItineraries(itinerariesRes.data.itineraries?.slice(0, 5) || []);
+
+      // FIXED: Correct mapping to backend /clients/stats
+      const s = clientStatsRes.data.stats || {};
 
       setStats({
         clients: {
-          total: clientStatsRes.data.total_clients || 0,
-          active: clientsRes.data.clients?.length || 0,
-          new_this_month: 0
+          total: s.clients?.total || 0,
+          active: s.clients?.active || 0,
+          new_this_month: s.clients?.new_this_month || 0
         },
         itineraries: {
           total: itinerariesRes.data.itineraries?.length || 0,
@@ -160,7 +165,8 @@ export default function Dashboard() {
                     <Users className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="font-medium">{client.full_name}</p>
+                    {/* FIX: use name, not full_name */}
+                    <p className="font-medium">{client.name}</p>
                     <p className="text-sm text-gray-600">{client.email}</p>
                   </div>
                 </div>

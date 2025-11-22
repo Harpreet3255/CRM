@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../config/supabase';
 import api from '../api/client';
 
 const AuthContext = createContext({});
@@ -12,51 +11,42 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile();
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile();
-        } else {
-          setProfile(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    // Check if user is logged in
+    checkAuth();
   }, []);
 
-  const fetchProfile = async () => {
+  const checkAuth = async () => {
     try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
       const response = await api.get('/auth/me');
-      setProfile(response.data.data);
+      setProfile(response.data.user);
+      setUser({ email: response.data.user.email });
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('auth_token');
     } finally {
       setLoading(false);
     }
   };
 
   const signIn = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
-    await fetchProfile();
-    return data;
+    try {
+      const response = await api.post('/auth/login', { email, password });
+      const { token, user: userData } = response.data;
+
+      localStorage.setItem('auth_token', token);
+      setUser({ email: userData.email });
+      setProfile(userData);
+
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.error || 'Login failed');
+    }
   };
 
   const signUp = async (email, password, fullName, agencyName) => {
@@ -67,20 +57,22 @@ export function AuthProvider({ children }) {
         full_name: fullName,
         agency_name: agencyName,
       });
-      
-      // Now sign in
-      await signIn(email, password);
+
+      const { token, user: userData } = response.data;
+      localStorage.setItem('auth_token', token);
+      setUser({ email: userData.email });
+      setProfile(userData);
+
       return response.data;
     } catch (error) {
-      throw error.response?.data?.error || error.message;
+      throw new Error(error.response?.data?.error || 'Registration failed');
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    localStorage.removeItem('auth_token');
     setUser(null);
     setProfile(null);
-    localStorage.removeItem('supabase_token');
   };
 
   const value = {
