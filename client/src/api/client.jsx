@@ -27,7 +27,10 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       console.warn("Unauthorized – clearing token");
       localStorage.removeItem('auth_token');
-      window.location.href = '/login';
+      // Only redirect if not already on login page
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -17,6 +17,33 @@ import settingsRoutes from './routes/settings.js';
 
 const app = express();
 
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const reqLogFile = 'c:/Users/harpr/CRM-1/server/request_debug_abs.log';
+
+app.get("/debug-info", (req, res) => {
+  res.json({
+    dirname: __dirname,
+    logFile: reqLogFile,
+    cwd: process.cwd()
+  });
+});
+
+app.use((req, res, next) => {
+  const msg = `[${new Date().toISOString()}] ${req.method} ${req.url}\n`;
+  try {
+    fs.appendFileSync(reqLogFile, msg);
+  } catch (err) {
+    console.error("Failed to write to log file:", err);
+  }
+  next();
+});
+
 // -----------------------------------------------------
 // CORS FIX (THIS IS WHAT WAS BREAKING YOUR CLIENT PAGE)
 // -----------------------------------------------------
@@ -37,19 +64,10 @@ app.use(bodyParser.json({ limit: "2mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const reqLogFile = path.join(__dirname, '../request.log');
-
-app.use((req, res, next) => {
-  const msg = `[${new Date().toISOString()}] ${req.method} ${req.url}\n`;
-  fs.appendFileSync(reqLogFile, msg);
-  next();
-});
+// -----------------------------------------------------
+// STATIC FILES (Frontend)
+// -----------------------------------------------------
+app.use(express.static(path.join(__dirname, '../../client/dist')));
 
 // -----------------------------------------------------
 // Health check
@@ -70,6 +88,24 @@ app.use("/api/settings", settingsRoutes);
 app.use("/api/ai", aiRoutes);
 
 // -----------------------------------------------------
+// SPA CATCH-ALL (Fallback)
+// -----------------------------------------------------
+app.use((req, res) => {
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  const indexPath = path.join(__dirname, '../../client/dist/index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error("Error sending index.html:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Error loading frontend");
+      }
+    }
+  });
+});
+
+// -----------------------------------------------------
 // Global Error Handler
 // -----------------------------------------------------
 app.use((err, req, res, next) => {
@@ -85,7 +121,7 @@ app.use((err, req, res, next) => {
 // -----------------------------------------------------
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Triponic B2B Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
   console.log(`🌐 Frontend allowed: ${process.env.CLIENT_URL}`);

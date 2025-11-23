@@ -803,3 +803,127 @@ Please retry in 28.377955105s. [{"@type":"type.googleapis.com/google.rpc.Help","
 [2025-11-23T00:17:08.831Z] [CLIENTS] [GetClients] Request from User: 597e1979-41c8-4936-90b5-1f96caa91300, Agency: b5e0c38a-3e45-40ac-8a91-6b0ce9ce131c
 [2025-11-23T00:17:08.934Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency b5e0c38a-3e45-40ac-8a91-6b0ce9ce131c
 [2025-11-23T00:17:08.997Z] [CLIENTS] [GetClients] Success. Found 3 records.
+[2025-11-23T19:32:46.576Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:32:46.577Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:36:20.566Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:36:20.567Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:36:20.894Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:36:20.895Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:36:23.573Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:36:23.574Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:39:07.823Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:39:07.825Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:44:53.757Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:44:53.758Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:45:12.563Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:45:12.564Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:45:12.808Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:45:12.809Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:45:24.244Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:45:24.244Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:45:24.475Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:45:24.476Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:52:41.251Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:52:41.253Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:52:41.488Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:52:41.490Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:52:54.302Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:52:54.304Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:52:54.491Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:52:54.497Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:53:28.214Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:53:28.215Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:53:28.426Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:53:28.428Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:55:45.829Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:55:45.830Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:56:50.730Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:56:50.732Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T19:57:30.395Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T19:57:30.396Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:00:47.819Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:00:47.820Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:12:29.731Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:12:29.732Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:12:34.793Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:12:34.794Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:13:10.551Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:13:10.552Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:13:38.117Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:13:38.118Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:13:53.455Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:13:53.455Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:14:05.063Z] [AUTH] [Register Attempt] Email: test_curl_user_3@example.com, Agency: Curl Agency 3
+[2025-11-23T20:14:05.063Z] [AUTH] [Register] Creating Supabase Auth user...
+[2025-11-23T20:14:05.585Z] [AUTH] [Register] Auth user created. ID: eac904f5-354d-48b3-b464-aa43b6ecbab2
+[2025-11-23T20:14:05.585Z] [AUTH] [Register] Creating agency...
+[2025-11-23T20:14:05.898Z] [AUTH] [Register] Agency created. ID: 8ae5a795-f52b-40d7-9d8e-a434d79875ff
+[2025-11-23T20:14:05.961Z] [AUTH] [Register] Creating user in 'users' table...
+[2025-11-23T20:14:06.053Z] [AUTH] [Register] User created in 'users' table
+[2025-11-23T20:14:06.055Z] [AUTH] [Register Success] Token generated
+[2025-11-23T20:14:20.726Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:14:20.727Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:15:20.078Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:15:20.079Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:16:29.586Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:16:29.587Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:18:37.610Z] [AUTH] [Register Attempt] Email: Ahuja@triponic.com, Agency: Ahuja@triponic.com
+[2025-11-23T20:18:37.611Z] [AUTH] [Register] Creating Supabase Auth user...
+[2025-11-23T20:18:37.989Z] [AUTH] [Register] Auth user created. ID: bbaaf979-35ca-4b56-a488-5ce61e50d427
+[2025-11-23T20:18:37.990Z] [AUTH] [Register] Creating agency...
+[2025-11-23T20:18:38.081Z] [AUTH] [Register] Agency created. ID: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:38.170Z] [AUTH] [Register] Creating user in 'users' table...
+[2025-11-23T20:18:38.296Z] [AUTH] [Register] User created in 'users' table
+[2025-11-23T20:18:38.300Z] [AUTH] [Register Success] Token generated
+[2025-11-23T20:18:38.445Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:38.537Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:38.770Z] [CLIENTS] [GetClients] Success. Found 0 records.
+[2025-11-23T20:18:43.635Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:43.699Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:43.752Z] [CLIENTS] [GetClients] Success. Found 0 records.
+[2025-11-23T20:18:52.410Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:52.465Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:52.536Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:18:59.814Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:59.872Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:18:59.955Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:22:58.788Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:22:58.789Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:26:57.619Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:26:57.693Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:26:57.765Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:27:08.303Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:27:08.372Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:27:08.426Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:27:44.546Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:27:44.612Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:27:44.707Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:29:15.401Z] [SUPABASE_CONFIG] Key Role: service_role
+[2025-11-23T20:29:15.402Z] [SUPABASE_CONFIG] Key ISS: supabase
+[2025-11-23T20:29:38.939Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:29:39.011Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:29:39.071Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:29:49.254Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:29:49.337Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:29:49.414Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:30:08.084Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:08.134Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:08.275Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:30:15.396Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:15.463Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:15.516Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:30:18.640Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:18.698Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:18.791Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:30:26.424Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:26.488Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:26.544Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:30:31.226Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:31.281Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:30:31.367Z] [CLIENTS] [GetClients] Success. Found 1 records.
+[2025-11-23T20:31:00.861Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:31:00.915Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:31:00.993Z] [CLIENTS] [GetClients] Success. Found 2 records.
+[2025-11-23T20:31:09.685Z] [CLIENTS] [GetClients] Request from User: bbaaf979-35ca-4b56-a488-5ce61e50d427, Agency: 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:31:09.751Z] [CLIENTS] [GetClients] Orphaned clients adopted to agency 5747c62a-7629-486c-9c35-49279124100f
+[2025-11-23T20:31:09.814Z] [CLIENTS] [GetClients] Success. Found 2 records.

@@ -274,6 +274,7 @@ export const getClientStats = async (req, res) => {
       clients: {
         total,
         active,
+        inactive: total - active,
         new_this_month: newThisMonth
       },
       itineraries: { total: 0, draft: 0, confirmed: 0 },

@@ -162,6 +162,9 @@ Return ONLY the modified valid JSON.
   }
 }
 
+// Export for use in itineraries controller
+export { createDayWiseItinerary, editItinerary };
+
 /* MAIN chat endpoint — will auto-create itineraries when intent says so */
 export const chatWithAI = async (req, res) => {
   try {
